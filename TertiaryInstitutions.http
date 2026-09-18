@@ -48,7 +48,9 @@ Content-Type: application/json
   "name": "Test Learner",
   "grade": 12,
   "language": "English",
-  "track": "Commerce"
+  "track": "Commerce",
+  "latitude": -26.2041,
+  "longitude": 28.0473
 }
 
 ###
@@ -85,6 +87,47 @@ Content-Type: application/json
 
 ###
 
+### Career directory
+GET {{TertiaryInstitutions_HostAddress}}/api/careers?riasecType=Investigative
+Accept: application/json
+
+###
+
+### Career match-scoring (subjects + optional signed-in RIASEC history)
+POST {{TertiaryInstitutions_HostAddress}}/api/careers/match
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "subjects": [
+    { "subject": "Mathematics", "level": 7 },
+    { "subject": "Physical Sciences", "level": 6 }
+  ]
+}
+
+###
+
+### Institutions - list sorted by distance (query params) or saved profile location
+GET {{TertiaryInstitutions_HostAddress}}/api/institutions?lat=-26.2041&lng=28.0473
+Accept: application/json
+
+###
+
+### Institutions - bulk APS matching across one institution's courses
+POST {{TertiaryInstitutions_HostAddress}}/api/institutions/1/matching-courses
+Content-Type: application/json
+
+{
+  "subjects": [
+    { "subject": "English Home Language", "level": 6 },
+    { "subject": "Mathematics", "level": 7 },
+    { "subject": "Physical Sciences", "level": 6 },
+    { "subject": "Life Sciences", "level": 6 }
+  ]
+}
+
+###
+
 ### Get job-fit quiz questions
 GET {{TertiaryInstitutions_HostAddress}}/api/assessment/questions
 Accept: application/json
@@ -111,6 +154,36 @@ Content-Type: application/json
 
 ### Get current learner's past assessment results
 GET {{TertiaryInstitutions_HostAddress}}/api/learners/me/assessments
+Authorization: Bearer {{token}}
+
+###
+
+### Journey - save a career
+POST {{TertiaryInstitutions_HostAddress}}/api/journey/careers/1
+Authorization: Bearer {{token}}
+
+###
+
+### Journey - list saved careers
+GET {{TertiaryInstitutions_HostAddress}}/api/journey/careers
+Authorization: Bearer {{token}}
+
+###
+
+### Journey - unsave a career
+DELETE {{TertiaryInstitutions_HostAddress}}/api/journey/careers/1
+Authorization: Bearer {{token}}
+
+###
+
+### Journey - get roadmap progress
+GET {{TertiaryInstitutions_HostAddress}}/api/journey/progress
+Authorization: Bearer {{token}}
+
+###
+
+### Journey - complete a roadmap step
+POST {{TertiaryInstitutions_HostAddress}}/api/journey/progress/Explore/complete
 Authorization: Bearer {{token}}
 
 ###

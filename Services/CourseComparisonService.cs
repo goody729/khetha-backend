@@ -62,7 +62,11 @@ public static class CourseComparisonService
         };
     }
 
-    private static SubjectRequirementResult EvaluateRequirement(SubjectRequirement requirement, IReadOnlyList<LearnerSubjectScore> learnerSubjects)
+    /// <summary>
+    /// Internal (not private) so <see cref="CareerMatchingScoreService"/> can reuse the same
+    /// subject/level requirement evaluation instead of duplicating it.
+    /// </summary>
+    internal static SubjectRequirementResult EvaluateRequirement(SubjectRequirement requirement, IReadOnlyList<LearnerSubjectScore> learnerSubjects)
     {
         var candidates = BuildCandidates(requirement);
 

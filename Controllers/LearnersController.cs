@@ -52,6 +52,8 @@ public class LearnersController : ControllerBase
         learner.Grade = request.Grade;
         learner.Language = request.Language;
         learner.Track = request.Track;
+        learner.Latitude = request.Latitude;
+        learner.Longitude = request.Longitude;
         await _db.SaveChangesAsync();
 
         return Ok(LearnerProfileResponse.FromLearner(learner));

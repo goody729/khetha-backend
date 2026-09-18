@@ -62,6 +62,12 @@ public static class SouthAfricanUniversities
             {
                 course.Id = nextCourseId++;
             }
+
+            if (SouthAfricanCityCoordinates.ByCity.TryGetValue(university.City, out var coordinates))
+            {
+                university.Latitude = coordinates.Lat;
+                university.Longitude = coordinates.Lng;
+            }
         }
 
         return universities;

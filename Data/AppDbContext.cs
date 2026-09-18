@@ -16,6 +16,8 @@ public class AppDbContext : DbContext
 
     public DbSet<Learner> Learners => Set<Learner>();
     public DbSet<AssessmentSubmission> AssessmentSubmissions => Set<AssessmentSubmission>();
+    public DbSet<SavedCareer> SavedCareers => Set<SavedCareer>();
+    public DbSet<JourneyProgress> JourneyProgresses => Set<JourneyProgress>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -35,6 +37,24 @@ public class AppDbContext : DbContext
             b.HasOne<Learner>()
                 .WithMany(l => l.AssessmentSubmissions)
                 .HasForeignKey(a => a.LearnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SavedCareer>(b =>
+        {
+            b.HasOne<Learner>()
+                .WithMany()
+                .HasForeignKey(s => s.LearnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(s => new { s.LearnerId, s.CareerId }).IsUnique();
+        });
+
+        modelBuilder.Entity<JourneyProgress>(b =>
+        {
+            b.HasKey(j => j.LearnerId);
+            b.HasOne<Learner>()
+                .WithOne()
+                .HasForeignKey<JourneyProgress>(j => j.LearnerId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

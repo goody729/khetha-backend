@@ -19,6 +19,10 @@ public class Learner
     /// <summary>Academic/subject track, e.g. Science, Commerce, Humanities.</summary>
     public string Track { get; set; } = string.Empty;
 
+    /// <summary>Saved location, used to compute distance-from-institution. Optional.</summary>
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public ICollection<AssessmentSubmission> AssessmentSubmissions { get; set; } = new List<AssessmentSubmission>();

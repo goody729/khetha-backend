@@ -50,6 +50,9 @@ public class UpdateLearnerProfileRequest
 
     [Required]
     public string Track { get; set; } = string.Empty;
+
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
 }
 
 public class LearnerProfileResponse
@@ -60,6 +63,8 @@ public class LearnerProfileResponse
     public int Grade { get; set; }
     public string Language { get; set; } = string.Empty;
     public string Track { get; set; } = string.Empty;
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 
     public static LearnerProfileResponse FromLearner(Learner learner) => new()
@@ -70,6 +75,8 @@ public class LearnerProfileResponse
         Grade = learner.Grade,
         Language = learner.Language,
         Track = learner.Track,
+        Latitude = learner.Latitude,
+        Longitude = learner.Longitude,
         CreatedAtUtc = learner.CreatedAtUtc
     };
 }
