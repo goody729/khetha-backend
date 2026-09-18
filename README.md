@@ -1,16 +1,24 @@
 # TertiaryInstitutions API
 
-An ASP.NET Core Web API for exploring South African public universities, their courses, NSC (matric) high school subjects, and checking whether a learner's subject results meet a course's admission requirements.
+An ASP.NET Core Web API for exploring South African public universities, their courses, NSC (matric) high school subjects, careers, and checking whether a learner's subject results meet a course's admission requirements. Also supports learner accounts (with saved location), an APS calculator, a career directory with match-scoring, distance/prospectus-aware institution browsing with bulk APS matching, a Holland Code (RIASEC) job-fit quiz, and a 5-step journey tracker.
 
 ## Features
 
-- Browse public South African universities, optionally filtered by province
-- Browse official NSC high school subjects, optionally filtered by category or designated-subject status
-- Compare a learner's NSC subject achievement levels (1-7) against a course's admission requirements
+- Browse public South African universities, optionally filtered by province and distance from a location
+- Browse official NSC high school subjects, optionally filtered by category, designated-subject status, or elective status
+- Compare a learner's NSC subject achievement levels (1-7) against a course's admission requirements, in bulk across one or all institutions
+- Learner accounts: register/login (JWT), profile (grade, name, language, track, saved location)
+- Calculate a generic APS (Admission Point Score) from a subject/level list
+- Career directory (title, demo OFO code, responsibilities, required subjects, pathways, RIASEC tags) with match-scoring against a learner's subjects and/or job-fit quiz result
+- Find courses (grouped by faculty) a subject combination could unlock
+- Job-fit quiz: serve Holland Code (RIASEC) questions, submit answers, get a personality-code result (saved to the learner's profile when signed in)
+- Journey tracker: save careers to a shortlist, track progress across 5 fixed roadmap steps (Explore → Assess → Shortlist → Apply → Enroll)
 
 ## Tech stack
 
 - .NET 8 / ASP.NET Core Web API
+- PostgreSQL via EF Core (Npgsql) — learner accounts and assessment results only; university/course/subject data stays static/in-memory
+- JWT bearer authentication
 - Swashbuckle (Swagger / OpenAPI)
 
 ## Getting started
@@ -18,6 +26,22 @@ An ASP.NET Core Web API for exploring South African public universities, their c
 ### Prerequisites
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- A local PostgreSQL instance
+- `dotnet-ef` CLI tool (`dotnet tool install --global dotnet-ef`)
+
+### Database setup
+
+1. Configure the connection string and JWT signing key with `dotnet user-secrets` (never commit real values into `appsettings.json`):
+   ```bash
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5433;Database=khetha;Username=postgres;Password=<your-password>;Ssl Mode=Disable"
+   dotnet user-secrets set "Jwt:Key" "<a random 32+ byte string>"
+   ```
+2. Apply migrations (this also creates the `khetha` database if it doesn't exist yet):
+   ```bash
+   dotnet ef database update
+   ```
+
+Outside local development, set `ConnectionStrings__DefaultConnection` and `Jwt__Key` as environment variables instead.
 
 ### Run
 
@@ -26,7 +50,7 @@ dotnet restore
 dotnet run
 ```
 
-Once running, Swagger UI is available at the app's root (or `/swagger`) for browsing and testing the endpoints interactively.
+Once running, Swagger UI is available at the app's root (or `/swagger`) for browsing and testing the endpoints interactively — use the "Authorize" button to attach a JWT bearer token to protected requests.
 
 ## API endpoints
 
@@ -41,7 +65,7 @@ Once running, Swagger UI is available at the app's root (or `/swagger`) for brow
 
 | Method | Route | Description |
 | --- | --- | --- |
-| GET | `/api/subjects` | Get all NSC subjects, optionally filtered by `category` and/or `designated` |
+| GET | `/api/subjects` | Get all NSC subjects, optionally filtered by `category`, `designated`, and/or `elective` |
 | GET | `/api/subjects/{id}` | Get a single subject by id |
 
 ### Compare
@@ -50,7 +74,71 @@ Once running, Swagger UI is available at the app's root (or `/swagger`) for brow
 | --- | --- | --- |
 | POST | `/api/compare/{courseId}` | Compare a learner's subjects/levels against a course's requirements |
 
-Example request body for `POST /api/compare/{courseId}`:
+### APS
+
+| Method | Route | Description |
+| --- | --- | --- |
+| POST | `/api/aps/calculate` | Calculate a generic APS score (best 6 subjects, excluding Life Orientation) |
+
+### Careers
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/careers` | Get the career directory, optionally filtered by `riasecType` and/or `keyword` |
+| GET | `/api/careers/{id}` | Get a single career by id |
+| POST | `/api/careers/unlocked` | Find courses (grouped by faculty) a subject combination could unlock |
+| POST | `/api/careers/match` | Rank all careers against supplied subjects and/or (if signed in) the learner's latest job-fit quiz result |
+
+`OfoCode` values in the career directory are **fabricated placeholders for structural/demo purposes only** — not verified official South African OFO codes.
+
+### Auth
+
+| Method | Route | Description |
+| --- | --- | --- |
+| POST | `/api/auth/register` | Register a new learner account, returns a JWT |
+| POST | `/api/auth/login` | Log in, returns a JWT |
+
+### Learners (requires `Authorization: Bearer <token>`)
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/learners/me` | Get the signed-in learner's profile |
+| PUT | `/api/learners/me` | Update the signed-in learner's profile (including saved location) |
+| GET | `/api/learners/me/assessments` | Get the signed-in learner's past job-fit quiz results |
+
+### Institutions
+
+A richer view over the same catalog as `/api/universities`. TVET colleges are not yet included.
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/institutions` | Get all institutions, optionally filtered by `province`, sorted by distance when `lat`/`lng` or a saved profile location is available |
+| GET | `/api/institutions/{id}` | Get a single institution, with distance and prospectus-link fallback |
+| POST | `/api/institutions/{id}/matching-courses` | Find which of one institution's courses a learner's subjects/levels qualify for |
+| POST | `/api/institutions/matching-courses` | Same, across every institution |
+
+`lat`/`lng` query params take precedence over a signed-in learner's saved profile location. Distance is straight-line (Haversine), approximated from city-centroid coordinates — not routing distance.
+
+### Assessment
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/assessment/questions` | Get the job-fit quiz question bank |
+| POST | `/api/assessment/submit` | Submit answers and get a Holland Code result (saved automatically if signed in) |
+
+### Journey (requires `Authorization: Bearer <token>`)
+
+| Method | Route | Description |
+| --- | --- | --- |
+| POST | `/api/journey/careers/{careerId}` | Save a career to the learner's shortlist (idempotent) |
+| DELETE | `/api/journey/careers/{careerId}` | Remove a career from the shortlist (idempotent) |
+| GET | `/api/journey/careers` | Get the learner's saved careers, with full career detail |
+| GET | `/api/journey/progress` | Get roadmap progress and the computed current step |
+| POST | `/api/journey/progress/{step}/complete` | Mark a step complete (idempotent; `step` is one of `Explore`, `Assess`, `Shortlist`, `Apply`, `Enroll`) |
+
+Completing a later step does not auto-complete earlier ones — each step is tracked independently.
+
+Example request body for `POST /api/compare/{courseId}` and `POST /api/aps/calculate`:
 
 ```json
 [
@@ -59,13 +147,24 @@ Example request body for `POST /api/compare/{courseId}`:
 ]
 ```
 
+Example request body for `POST /api/institutions/{id}/matching-courses`, `POST /api/institutions/matching-courses`, and `POST /api/careers/match`:
+
+```json
+{
+  "subjects": [
+    { "subject": "Mathematics", "level": 6 },
+    { "subject": "English Home Language", "level": 5 }
+  ]
+}
+```
+
 ## Project structure
 
 ```
-Controllers/   API controllers (Universities, Subjects, Compare)
-Models/        Domain models (University, Course, Subject, Comparison)
-Data/          Static datasets (universities, courses per institution, NSC subjects)
-Services/      Business logic (course comparison)
+Controllers/   API controllers (Universities, Subjects, Compare, Aps, Careers, Auth, Learners, Institutions, Assessment, Journey)
+Models/        Domain models and DTOs (University, Course, Subject, Comparison, Learner, Aps, Careers, Institutions, Assessment, Journey)
+Data/          Static datasets (universities, courses per institution, NSC subjects, city coordinates, careers, quiz questions) + EF Core DbContext/migrations
+Services/      Business logic (course comparison, subject matching, APS calculation, career matching/scoring, geo-distance, auth, JWT, quiz scoring)
 ```
 
 ## License

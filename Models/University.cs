@@ -9,6 +9,15 @@ public class University
     public string City { get; set; } = string.Empty;
     public string Type { get; set; } = string.Empty;
     public string Website { get; set; } = string.Empty;
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+
+    /// <summary>
+    /// Direct link to the university's prospectus, when known. Not populated in the current static
+    /// catalog (left null) - callers should fall back to <see cref="Website"/> when this is null.
+    /// </summary>
+    public string? ProspectusUrl { get; set; }
+
     public List<Course> Courses { get; set; } = new();
 }
 

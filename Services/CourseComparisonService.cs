@@ -30,10 +30,6 @@ public static class CourseComparisonService
         @"(?<phrase>[A-Za-z][A-Za-z\s]{0,40}?)?\s*\b(?<pct>\d{1,3})\s*%",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private static readonly Regex SubjectSplitPattern = new(
-        @"\s+and/or\s+|\s+or\s+|\s*/\s*|,",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
     public static CourseComparisonResult? Compare(int courseId, IReadOnlyList<LearnerSubjectScore> learnerSubjects)
     {
         var found = SouthAfricanUniversities.FindCourse(courseId);
@@ -66,7 +62,11 @@ public static class CourseComparisonService
         };
     }
 
-    private static SubjectRequirementResult EvaluateRequirement(SubjectRequirement requirement, IReadOnlyList<LearnerSubjectScore> learnerSubjects)
+    /// <summary>
+    /// Internal (not private) so <see cref="CareerMatchingScoreService"/> can reuse the same
+    /// subject/level requirement evaluation instead of duplicating it.
+    /// </summary>
+    internal static SubjectRequirementResult EvaluateRequirement(SubjectRequirement requirement, IReadOnlyList<LearnerSubjectScore> learnerSubjects)
     {
         var candidates = BuildCandidates(requirement);
 
@@ -88,7 +88,7 @@ public static class CourseComparisonService
 
         foreach (var (candidateName, requiredLevel) in candidates)
         {
-            var learnerSubject = learnerSubjects.FirstOrDefault(s => NamesMatch(s.Subject, candidateName));
+            var learnerSubject = learnerSubjects.FirstOrDefault(s => SubjectMatching.NamesMatch(s.Subject, candidateName));
             if (learnerSubject is null)
             {
                 continue;
@@ -133,16 +133,9 @@ public static class CourseComparisonService
         var candidates = new List<(string Name, int Level)>();
 
         var baseSubject = requirement.Subject.Split('(')[0].Trim();
-        baseSubject = SubjectSplitPattern.Split(baseSubject).FirstOrDefault()?.Trim() ?? baseSubject;
+        baseSubject = SubjectMatching.SplitAlternatives(baseSubject).FirstOrDefault()?.Trim() ?? baseSubject;
 
-        var subjectTokens = SubjectSplitPattern.Split(requirement.Subject)
-            .Select(t => t.Replace("(", " ").Replace(")", " ").Trim())
-            .Where(t => t.Length > 0)
-            .ToList();
-        if (subjectTokens.Count == 0)
-        {
-            subjectTokens.Add(requirement.Subject.Trim());
-        }
+        var subjectTokens = SubjectMatching.SplitAlternatives(requirement.Subject);
 
         var consumedRanges = new List<(int Start, int End)>();
 
@@ -198,21 +191,4 @@ public static class CourseComparisonService
         if (pct >= 30) return 2;
         return 1;
     }
-
-    private static bool NamesMatch(string a, string b)
-    {
-        var normalizedA = Normalize(a);
-        var normalizedB = Normalize(b);
-        if (normalizedA.Length == 0 || normalizedB.Length == 0)
-        {
-            return false;
-        }
-
-        return normalizedA.Equals(normalizedB, StringComparison.OrdinalIgnoreCase)
-            || normalizedA.Contains(normalizedB, StringComparison.OrdinalIgnoreCase)
-            || normalizedB.Contains(normalizedA, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string Normalize(string s) =>
-        Regex.Replace(s, @"[()]", " ").Replace("  ", " ").Trim();
 }
