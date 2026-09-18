@@ -1,3 +1,11 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using TertiaryInstitutions.Data;
+using TertiaryInstitutions.Models;
 using TertiaryInstitutions.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,7 +79,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = jwtSection["Audience"],
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"] ?? string.Empty)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                jwtSection["Key"] ?? throw new InvalidOperationException(
+                    "Jwt:Key is not configured. Run: dotnet user-secrets set \"Jwt:Key\" \"<32+ char secret>\""))),
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
