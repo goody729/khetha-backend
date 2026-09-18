@@ -1,6 +1,6 @@
 @TertiaryInstitutions_HostAddress = http://localhost:5179
 
-GET {{TertiaryInstitutions_HostAddress}}/weatherforecast/
+GET {{TertiaryInstitutions_HostAddress}}/api/universities
 Accept: application/json
 
 ###
