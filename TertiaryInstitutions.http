@@ -4,3 +4,113 @@ GET {{TertiaryInstitutions_HostAddress}}/api/universities
 Accept: application/json
 
 ###
+
+### Register a learner
+POST {{TertiaryInstitutions_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test Learner",
+  "email": "test.learner@example.com",
+  "password": "Password123",
+  "grade": 11,
+  "language": "English",
+  "track": "Science"
+}
+
+###
+
+### Log in (copy the returned token into @token below)
+POST {{TertiaryInstitutions_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test.learner@example.com",
+  "password": "Password123"
+}
+
+###
+
+@token = REPLACE_WITH_TOKEN_FROM_LOGIN
+
+### Get current learner profile
+GET {{TertiaryInstitutions_HostAddress}}/api/learners/me
+Authorization: Bearer {{token}}
+
+###
+
+### Update current learner profile
+PUT {{TertiaryInstitutions_HostAddress}}/api/learners/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Test Learner",
+  "grade": 12,
+  "language": "English",
+  "track": "Commerce"
+}
+
+###
+
+### Elective subjects (non-compulsory)
+GET {{TertiaryInstitutions_HostAddress}}/api/subjects?elective=true
+Accept: application/json
+
+###
+
+### Calculate APS
+POST {{TertiaryInstitutions_HostAddress}}/api/aps/calculate
+Content-Type: application/json
+
+[
+  { "subject": "English Home Language", "level": 6 },
+  { "subject": "Mathematics", "level": 7 },
+  { "subject": "Physical Sciences", "level": 6 },
+  { "subject": "Life Sciences", "level": 5 },
+  { "subject": "Afrikaans First Additional Language", "level": 5 },
+  { "subject": "Geography", "level": 6 },
+  { "subject": "Life Orientation", "level": 7 }
+]
+
+###
+
+### Careers unlocked by subject combo
+POST {{TertiaryInstitutions_HostAddress}}/api/careers/unlocked
+Content-Type: application/json
+
+{
+  "subjects": ["Mathematics", "Physical Sciences", "English Home Language", "Life Sciences"]
+}
+
+###
+
+### Get job-fit quiz questions
+GET {{TertiaryInstitutions_HostAddress}}/api/assessment/questions
+Accept: application/json
+
+###
+
+### Submit job-fit quiz answers (optionally authenticated to save the result)
+POST {{TertiaryInstitutions_HostAddress}}/api/assessment/submit
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "answers": [
+    { "questionId": 1, "rating": 4 },
+    { "questionId": 7, "rating": 5 },
+    { "questionId": 13, "rating": 2 },
+    { "questionId": 19, "rating": 5 },
+    { "questionId": 25, "rating": 3 },
+    { "questionId": 31, "rating": 4 }
+  ]
+}
+
+###
+
+### Get current learner's past assessment results
+GET {{TertiaryInstitutions_HostAddress}}/api/learners/me/assessments
+Authorization: Bearer {{token}}
+
+###
