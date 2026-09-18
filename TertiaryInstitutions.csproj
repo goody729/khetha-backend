@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>78b4f7c1-5757-4f45-87d6-83b4b48a6e94</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,3 +14,4 @@
   </ItemGroup>
 
 </Project>
+r

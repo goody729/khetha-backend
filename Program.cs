@@ -1,6 +1,17 @@
+using TertiaryInstitutions.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.Configure<AnthropicOptions>(
+    builder.Configuration.GetSection(AnthropicOptions.Section));
+
+builder.Services.AddHttpClient<KhethaAiService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.anthropic.com/v1/");
+    client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
