@@ -145,7 +145,7 @@ The "After School" YouTube playlist, a short-video series on planning your study
 
 | Method | Route | Description |
 | --- | --- | --- |
-| GET | `/api/guide` | Get the user-guide YouTube playlist (watch URL, playlist URL, embeddable player URL, and episode list) |
+| GET | `/api/guide` | Get the user-guide YouTube playlist (watch URL, playlist URL, embeddable player URL, and episode list with `videoId` and `thumbnailUrl` per episode) |
 
 Example request body for `POST /api/compare/{courseId}` and `POST /api/aps/calculate`:
 

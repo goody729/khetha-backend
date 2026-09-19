@@ -37,4 +37,10 @@ public class GuideEpisode
 
     /// <summary>Running time as m:ss.</summary>
     public string Duration { get; set; } = string.Empty;
+
+    /// <summary>The YouTube video id for this episode.</summary>
+    public string VideoId { get; set; } = string.Empty;
+
+    /// <summary>Cover image (thumbnail) for the episode, served by YouTube.</summary>
+    public string ThumbnailUrl => $"https://img.youtube.com/vi/{VideoId}/hqdefault.jpg";
 }
