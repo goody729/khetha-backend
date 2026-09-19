@@ -13,6 +13,7 @@ An ASP.NET Core Web API for exploring South African public universities, their c
 - Find courses (grouped by faculty) a subject combination could unlock
 - Job-fit quiz: serve Holland Code (RIASEC) questions, submit answers, get a personality-code result (saved to the learner's profile when signed in)
 - Journey tracker: save careers to a shortlist, track progress across 5 fixed roadmap steps (Explore → Assess → Shortlist → Apply → Enroll)
+- User guide: a YouTube video playlist exposed via `/api/guide` and linked from Swagger
 
 ## Tech stack
 
@@ -138,6 +139,14 @@ A richer view over the same catalog as `/api/universities`. TVET colleges are no
 
 Completing a later step does not auto-complete earlier ones — each step is tracked independently.
 
+### Guide
+
+The "After School" YouTube playlist, a short-video series on planning your study and career path, serves as a user guide. The same link is shown in the Swagger UI description.
+
+| Method | Route | Description |
+| --- | --- | --- |
+| GET | `/api/guide` | Get the user-guide YouTube playlist (watch URL, playlist URL, embeddable player URL, and episode list) |
+
 Example request body for `POST /api/compare/{courseId}` and `POST /api/aps/calculate`:
 
 ```json
@@ -161,7 +170,7 @@ Example request body for `POST /api/institutions/{id}/matching-courses`, `POST /
 ## Project structure
 
 ```
-Controllers/   API controllers (Universities, Subjects, Compare, Aps, Careers, Auth, Learners, Institutions, Assessment, Journey)
+Controllers/   API controllers (Universities, Subjects, Compare, Aps, Careers, Auth, Learners, Institutions, Assessment, Journey, Guide)
 Models/        Domain models and DTOs (University, Course, Subject, Comparison, Learner, Aps, Careers, Institutions, Assessment, Journey)
 Data/          Static datasets (universities, courses per institution, NSC subjects, city coordinates, careers, quiz questions) + EF Core DbContext/migrations
 Services/      Business logic (course comparison, subject matching, APS calculation, career matching/scoring, geo-distance, auth, JWT, quiz scoring)

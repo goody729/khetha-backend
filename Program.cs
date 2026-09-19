@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TertiaryInstitutions.Controllers;
 using TertiaryInstitutions.Data;
 using TertiaryInstitutions.Models;
 using TertiaryInstitutions.Services;
@@ -30,7 +31,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "South African Tertiary Institutions API",
         Version = "v1",
-        Description = "Lists public universities in South Africa."
+        Description = "Lists public universities in South Africa. New here? Watch the user guide: " + GuideController.WatchUrl
     });
 
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
