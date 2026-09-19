@@ -18,6 +18,9 @@ public class AppDbContext : DbContext
     public DbSet<AssessmentSubmission> AssessmentSubmissions => Set<AssessmentSubmission>();
     public DbSet<SavedCareer> SavedCareers => Set<SavedCareer>();
     public DbSet<JourneyProgress> JourneyProgresses => Set<JourneyProgress>();
+    public DbSet<TermResult> TermResults => Set<TermResult>();
+    public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
+    public DbSet<ReminderLog> ReminderLogs => Set<ReminderLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +50,41 @@ public class AppDbContext : DbContext
                 .HasForeignKey(s => s.LearnerId)
                 .OnDelete(DeleteBehavior.Cascade);
             b.HasIndex(s => new { s.LearnerId, s.CareerId }).IsUnique();
+        });
+
+        modelBuilder.Entity<TermResult>(b =>
+        {
+            b.Property(r => r.Subject).IsRequired().HasMaxLength(100);
+            b.HasOne<Learner>()
+                .WithMany()
+                .HasForeignKey(r => r.LearnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(r => new { r.LearnerId, r.Year, r.Term, r.Subject }).IsUnique();
+            b.ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_TermResult_Term_Range", "\"Term\" >= 1 AND \"Term\" <= 4");
+                t.HasCheckConstraint("CK_TermResult_Percentage_Range", "\"Percentage\" >= 0 AND \"Percentage\" <= 100");
+            });
+        });
+
+        modelBuilder.Entity<DeviceToken>(b =>
+        {
+            b.Property(d => d.Token).IsRequired().HasMaxLength(512);
+            b.Property(d => d.Platform).IsRequired().HasMaxLength(20);
+            b.HasOne<Learner>()
+                .WithMany()
+                .HasForeignKey(d => d.LearnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(d => d.Token).IsUnique();
+        });
+
+        modelBuilder.Entity<ReminderLog>(b =>
+        {
+            b.HasOne<Learner>()
+                .WithMany()
+                .HasForeignKey(l => l.LearnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(l => new { l.LearnerId, l.ForYear, l.ForTerm, l.SentOn }).IsUnique();
         });
 
         modelBuilder.Entity<JourneyProgress>(b =>

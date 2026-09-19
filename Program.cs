@@ -16,11 +16,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AnthropicOptions>(
     builder.Configuration.GetSection(AnthropicOptions.Section));
 
-builder.Services.AddHttpClient<KhethaAiService>(client =>
+void ConfigureAnthropicClient(HttpClient client)
 {
     client.BaseAddress = new Uri("https://api.anthropic.com/v1/");
     client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
-});
+}
+
+builder.Services.AddHttpClient<KhethaAiService>(ConfigureAnthropicClient);
+builder.Services.AddHttpClient<ProgressCoachService>(ConfigureAnthropicClient);
+
+// Report-card reminders. LoggingPushSender only logs; replace it with a real provider (e.g. FCM).
+builder.Services.AddSingleton<IPushSender, LoggingPushSender>();
+builder.Services.AddHostedService<ReportCardReminderWorker>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
